@@ -42,6 +42,7 @@
     "eslint-plugin-import": "^2.21.1",
     "eslint-plugin-jest": "^23.13.2",
     "jest": "^26.0.1",
-    "jest-cli": "^26.0.1"
+    "jest-cli": "^26.0.1",
+    "mock-fs": "^4.12.0"
   }
 }
