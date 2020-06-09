@@ -33,6 +33,7 @@
   "homepage": "https://github.com/deputatov/backend-project-lvl3#readme",
   "dependencies": {
     "@jest/globals": "^26.0.1",
+    "axios": "^0.19.2",
     "commander": "^5.1.0",
     "lodash": "^4.17.15"
   },
