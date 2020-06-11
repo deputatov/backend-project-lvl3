@@ -4,7 +4,7 @@ import { promises as fs } from 'fs';
 
 export default (dest, url) => {
   const { host, pathname } = new URL(url);
-  const re = /[^a-z0-9]/g;
+  const re = /[^\w]/g;
   const filename = `${host.replace(re, '-')}${pathname.replace(re, '-')}.html`;
   axios
     .get(url)
