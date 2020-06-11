@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "Project [backend-project-lvl3](https://ru.hexlet.io/professions/backend/projects/4)",
   "main": "index.js",
-  "bin": {},
+  "bin": {
+    "page-loader": "bin/nodejs-package.js"
+  },
   "engines": {
     "node": ">=14"
   },
