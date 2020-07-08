@@ -36,14 +36,15 @@
   "dependencies": {
     "@jest/globals": "^26.0.1",
     "axios": "^0.19.2",
+    "cheerio": "^1.0.0-rc.3",
     "commander": "^5.1.0",
     "lodash": "^4.17.15"
   },
   "devDependencies": {
     "debug": "^4.1.1",
-    "eslint": "^7.2.0",
-    "eslint-config-airbnb-base": "^14.1.0",
-    "eslint-plugin-import": "^2.21.1",
+    "eslint": "^7.4.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jest": "^23.13.2",
     "jest": "^26.0.1",
     "jest-cli": "^26.0.1",
