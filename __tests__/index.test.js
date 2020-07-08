@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import os from 'os';
 import nock from 'nock';
 import path from 'path';
-import pageLoader from '../src/index.js';
+import loadPage from '../src/index.js';
 
 const fixture = '__tests__/__fixtures__/test.html';
 
@@ -17,6 +17,6 @@ test('page loader', async () => {
   const scope = nock('https://ru.hexlet.io')
     .get('/courses')
     .reply(200, data);
-  await pageLoader(testpath, 'https://ru.hexlet.io/courses');
+  await loadPage(testpath, 'https://ru.hexlet.io/courses');
   expect(scope.isDone()).toBe(true);
 });

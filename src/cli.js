@@ -1,5 +1,10 @@
 import commander from 'commander';
-import pageLoader from './index.js';
+import { createRequire } from 'module';
+import loadPage from './index.js';
+
+const require = createRequire(import.meta.url);
+
+const { version } = require('../package.json');
 
 const message = `Page loader downloads the page from the network
 and puts it in the specified directory
@@ -7,12 +12,12 @@ and puts it in the specified directory
 
 export default () => {
   commander
-    .version('0.0.1')
+    .version(version)
     .description(message)
     .option('-o, --output <dest>', 'destination path', process.cwd())
     .arguments('<url>')
     .action((url) => {
-      pageLoader(commander.output, url);
+      loadPage(commander.output, url);
     })
     .parse(process.argv);
   if (!commander.args.length) commander.help();
