@@ -29,7 +29,7 @@ export default (dest, url) => {
       const $ = cheerio.load(data);
       const directorypath = path.join(dest, directoryname);
       fs.mkdir(directorypath);
-      $('link').each((_, element) => {
+      $('link').each((i, element) => {
         const $element = $(element);
         const attr = $element.attr('href');
         if (isLocalResource(attr, myURL)) {
@@ -41,7 +41,7 @@ export default (dest, url) => {
         }
       });
 
-      $('img').each((_, element) => {
+      $('img').each((i, element) => {
         const $element = $(element);
         const src = $element.attr('src');
         if (isLocalResource(src, myURL)) {
@@ -53,7 +53,7 @@ export default (dest, url) => {
         }
       });
 
-      $('script').each((_, element) => {
+      $('script').each((i, element) => {
         const $element = $(element);
         const src = $element.attr('src');
         if (isLocalResource(src, myURL)) {
