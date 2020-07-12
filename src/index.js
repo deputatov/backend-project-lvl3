@@ -3,7 +3,7 @@ import axios from 'axios';
 import path from 'path';
 import cheerio from 'cheerio';
 import fs from 'fs/promises';
-import trim from 'lodash/trim';
+import _ from 'lodash';
 
 const regHTML = /[^\w]/g;
 const regFile = /\//g;
@@ -13,7 +13,7 @@ const isLocalResource = (src, url) => {
   return myURL.host === url.host;
 };
 
-const getReplacedString = (str, re) => trim(str.replace(re, '-'), '-');
+const getReplacedString = (str, re) => _.trim(str.replace(re, '-'), '-');
 
 export default (dest, url) => {
   const myURL = new URL(url);
