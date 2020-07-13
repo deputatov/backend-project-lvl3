@@ -36,14 +36,14 @@
   "dependencies": {
     "@jest/globals": "^26.0.1",
     "axios": "^0.19.2",
+    "axios-debug-log": "^0.8.0",
     "cheerio": "^1.0.0-rc.3",
     "commander": "^5.1.0",
+    "debug": "^4.1.1",
     "lodash": "^4.17.15",
-    "rimraf": "^3.0.2",
-    "save": "^2.4.0"
+    "rimraf": "^3.0.2"
   },
   "devDependencies": {
-    "debug": "^4.1.1",
     "eslint": "^7.4.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",

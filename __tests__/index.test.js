@@ -40,18 +40,25 @@ test('page loader', async () => {
   const scope = nock(host)
     .get('/icons/icon1.ico')
     .reply(200, icon1)
+    .log(console.log)
     .get('/icons/icon2.ico')
     .reply(200, icon2)
+    .log(console.log)
     .get('/images/image1.png')
     .reply(200, image1)
+    .log(console.log)
     .get('/images/image2.png')
     .reply(200, image2)
+    .log(console.log)
     .get('/scripts/script1')
     .reply(200, script1)
+    .log(console.log)
     .get('/scripts/script2')
     .reply(200, script2)
+    .log(console.log)
     .get('/')
-    .reply(200, data);
+    .reply(200, data)
+    .log(console.log);
   await loadPage(testpath, host);
   expect(scope.isDone()).toBe(true);
 });
