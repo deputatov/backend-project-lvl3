@@ -17,7 +17,11 @@ export default () => {
     .option('-o, --output <dest>', 'destination path', process.cwd())
     .arguments('<url>')
     .action((url) => {
-      loadPage(commander.output, url);
+      loadPage(commander.output, url)
+        .catch((error) => {
+          console.error(error.message);
+          process.exit(1);
+        });
     })
     .parse(process.argv);
   if (!commander.args.length) commander.help();
