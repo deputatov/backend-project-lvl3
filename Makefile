@@ -1,7 +1,7 @@
 install: install-deps
 
 run:
-	bin/nodejs-package.js https://ru.hexlet.io/courses
+	bin/nodejs-package.js https://ru.hexlet.io/courses 
 
 install-deps:
 	npm ci

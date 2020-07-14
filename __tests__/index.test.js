@@ -12,9 +12,9 @@ const __dirname = path.dirname(__filename);
 
 const host = 'http://localhost';
 
-const getFixturePath = (filename) => path.join(__dirname, '__fixtures__', filename);
+const getFixturePath = (filename) => path.join(__dirname, '..', '__fixtures__', filename);
 
-const readFile = async (filename) => {
+const readFixtureFile = async (filename) => {
   const file = await fs.readFile(getFixturePath(filename), 'utf-8');
   return file;
 };
@@ -30,14 +30,17 @@ afterEach(async () => {
 });
 
 test('page loader', async () => {
-  const data = await readFile('test.html');
-  const icon1 = await readFile('/icons/icon1.ico');
-  const icon2 = await readFile('/icons/icon2.ico');
-  const image1 = await readFile('/images/image1.png');
-  const image2 = await readFile('/images/image2.png');
-  const script1 = await readFile('/scripts/script1');
-  const script2 = await readFile('/scripts/script2');
-  const scope = nock(host)
+  const before = await readFixtureFile('before.html');
+  const after = await readFixtureFile('after.html');
+
+  const icon1 = await readFixtureFile('/icons/icon1.ico');
+  const icon2 = await readFixtureFile('/icons/icon2.ico');
+  const image1 = await readFixtureFile('/images/image1.png');
+  const image2 = await readFixtureFile('/images/image2.png');
+  const script1 = await readFixtureFile('/scripts/script1');
+  const script2 = await readFixtureFile('/scripts/script2');
+
+  nock(host)
     .get('/icons/icon1.ico')
     .reply(200, icon1)
     .log(console.log)
@@ -57,8 +60,9 @@ test('page loader', async () => {
     .reply(200, script2)
     .log(console.log)
     .get('/')
-    .reply(200, data)
+    .reply(200, before)
     .log(console.log);
   await loadPage(testpath, host);
-  expect(scope.isDone()).toBe(true);
+  const actual = await fs.readFile(path.join(testpath, 'localhost.html'), 'utf-8');
+  expect(actual).toBe(after.trim());
 });
