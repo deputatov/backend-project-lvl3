@@ -18,6 +18,7 @@ export default () => {
     .arguments('<url>')
     .action((url) => {
       loadPage(commander.output, url)
+        .then(() => console.log('done!'))
         .catch((error) => {
           console.error(error.message);
           process.exit(1);

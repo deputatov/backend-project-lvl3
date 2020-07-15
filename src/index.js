@@ -5,6 +5,7 @@ import path from 'path';
 import axios from 'axios';
 import debug from 'debug';
 import cheerio from 'cheerio';
+import 'axios-debug-log';
 
 const log = debug('page-loader');
 
@@ -18,7 +19,6 @@ const isLocalResource = (src, url) => {
 
 const getReplacedString = (str, re) => _.trim(str.replace(re, '-'), '-');
 
-log('begin');
 export default (dest, url) => {
   const myURL = new URL(url);
   const { host, pathname } = myURL;
@@ -81,4 +81,3 @@ export default (dest, url) => {
       .get(href, { responseType: 'arraybuffer' })
       .then((response) => fs.writeFile(fullFilePath, response.data))));
 };
-log('end');
