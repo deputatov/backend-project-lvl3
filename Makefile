@@ -1,7 +1,7 @@
 install: install-deps
 
 run:
-	bin/nodejs-package.js http://lodash.com 
+	bin/nodejs-package.js https://lodash.com/
 
 install-deps:
 	npm ci
