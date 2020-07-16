@@ -12,14 +12,14 @@ const __dirname = path.dirname(__filename);
 
 const url = 'http://localhost';
 
+let testpath;
+
 const getFixturePath = (filename) => path.join(__dirname, '..', '__fixtures__', filename);
 
 const readFixtureFile = async (filename) => {
   const file = await fs.readFile(getFixturePath(filename), 'utf-8');
   return file;
 };
-
-let testpath;
 
 beforeEach(async () => {
   testpath = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
@@ -61,7 +61,7 @@ test('page loader', async () => {
 });
 
 test('no directory', async () => {
-  await expect(loadPage('/nodirectory', url)).rejects.toThrow();
+  await expect(loadPage(path.join(testpath, 'nodirectory'), url)).rejects.toThrow();
 });
 
 test('404', async () => {

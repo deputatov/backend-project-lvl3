@@ -1,7 +1,6 @@
-// @ts-check
-import _ from 'lodash';
 import fs from 'fs/promises';
 import path from 'path';
+import trim from 'lodash/trim.js';
 import axios from 'axios';
 import debug from 'debug';
 import cheerio from 'cheerio';
@@ -12,12 +11,20 @@ const log = debug('page-loader');
 const regHTML = /[^\w]/g;
 const regFile = /\//g;
 
+const tags = {
+  link: 'href',
+  script: 'src',
+  img: 'src',
+};
+
 const isLocalResource = (src, url) => {
   const myURL = new URL(src, url);
   return myURL.host === url.host;
 };
 
-const getReplacedString = (str, re) => _.trim(str.replace(re, '-'), '-');
+const getReplacedString = (str, re) => trim(str.replace(re, '-'), '-');
+
+const links = [];
 
 export default (dest, url) => {
   const myURL = new URL(url);
@@ -29,55 +36,28 @@ export default (dest, url) => {
   return axios
     .get(url)
     .then(({ data }) => {
-      const links = [];
       const $ = cheerio.load(data);
       const directorypath = path.join(dest, directoryname);
       fs.mkdir(directorypath);
+
       log('create directory %o', directorypath);
-      $('link').each((i, element) => {
+
+      Object.entries(tags).map(([tag, attribute]) => $(tag).each((_, element) => {
         const $element = $(element);
-        const attr = $element.attr('href');
-        if (isLocalResource(attr, myURL)) {
-          const replacedAttr = getReplacedString(attr, regFile);
+        const resource = $element.attr(attribute);
+        if (isLocalResource(resource, myURL)) {
+          const replacedAttr = getReplacedString(resource, regFile);
           const filepath = path.join(directoryname, replacedAttr);
-          $element.attr('href', filepath);
-          log('set attribute %o to %o', attr, filepath);
-          const { href } = new URL(attr, url);
+          $element.attr(attribute, filepath);
+          const { href } = new URL(resource, myURL);
           links.push({ href, fullFilePath: path.join(directorypath, replacedAttr) });
         }
-      });
-
-      $('img').each((i, element) => {
-        const $element = $(element);
-        const src = $element.attr('src');
-        if (isLocalResource(src, myURL)) {
-          const replacedSrc = getReplacedString(src, regFile);
-          const filepath = path.join(directoryname, replacedSrc);
-          $element.attr('src', filepath);
-          log('set attribute %o to %o', src, filepath);
-          const { href } = new URL(src, url);
-          links.push({ href, fullFilePath: path.join(directorypath, replacedSrc) });
-        }
-      });
-
-      $('script').each((i, element) => {
-        const $element = $(element);
-        const src = $element.attr('src');
-        if (isLocalResource(src, myURL)) {
-          const replacedSrc = getReplacedString(src, regFile);
-          const filepath = path.join(directoryname, replacedSrc);
-          $element.attr('src', filepath);
-          log('set attribute %o to %o', src, filepath);
-          const { href } = new URL(src, url);
-          links.push({ href, fullFilePath: path.join(directorypath, replacedSrc) });
-        }
-      });
+      }));
       const destFolderHTML = path.join(dest, filename);
       fs.writeFile(destFolderHTML, $.html());
       log('write html file %o', destFolderHTML);
-      return links;
     })
-    .then((links) => links.forEach(({ href, fullFilePath }) => axios
+    .then(() => links.forEach(({ href, fullFilePath }) => axios
       .get(href, { responseType: 'arraybuffer' })
       .then((response) => fs.writeFile(fullFilePath, response.data))));
 };
