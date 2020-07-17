@@ -1,6 +1,6 @@
+import _ from 'lodash';
 import fs from 'fs/promises';
 import path from 'path';
-import trim from 'lodash/trim.js';
 import axios from 'axios';
 import debug from 'debug';
 import Listr from 'listr';
@@ -8,9 +8,6 @@ import cheerio from 'cheerio';
 import 'axios-debug-log';
 
 const log = debug('page-loader');
-
-const regHTML = /[^\w]/g;
-const regFile = /\//g;
 
 const tags = {
   link: 'href',
@@ -23,12 +20,12 @@ const isLocalResource = (src, url) => {
   return myURL.origin === url.origin;
 };
 
-const getReplacedString = (str, re) => trim(str.replace(re, '-'), '-');
+const getReplacedString = (string, pattern = /\W/g, replacement = '-') => _.trim(_.replace(string, pattern, replacement), replacement);
 
 export default (dest, url) => {
   const myURL = new URL(url);
   const { host, pathname } = myURL;
-  const replacedURL = getReplacedString(`${host}${pathname}`, regHTML);
+  const replacedURL = getReplacedString(`${host}${pathname}`);
   const filename = `${replacedURL}.html`;
   const directoryname = `${replacedURL}_files`;
   const links = [];
@@ -37,25 +34,24 @@ export default (dest, url) => {
     .then(({ data }) => {
       const $ = cheerio.load(data);
       const directorypath = path.join(dest, directoryname);
-      // log('create directory %o', directorypath);
-      Object.entries(tags).map(([tag, attribute]) => $(tag).each((_, element) => {
+      Object.entries(tags).map(([tag, attribute]) => $(tag).each((i, element) => {
         const $element = $(element);
         const resource = $element.attr(attribute);
         if (resource && isLocalResource(resource, myURL)) {
-          const replacedAttr = getReplacedString(resource, regFile);
-          const filepath = path.join(directoryname, replacedAttr);
+          const { dir, name, ext } = path.parse(resource);
+          const newName = `${getReplacedString(path.join(dir, name))}${ext}`;
+          const filepath = path.join(directoryname, newName);
           $element.attr(attribute, filepath);
           const { href } = new URL(resource, myURL);
-          links.push({ href, fullFilePath: path.join(directorypath, replacedAttr) });
+          links.push({ href, fullFilePath: path.join(directorypath, newName) });
         }
       }));
       const destFolderHTML = path.join(dest, filename);
       fs.writeFile(destFolderHTML, $.html());
       log('write html file %o', destFolderHTML);
     })
+    .then(() => fs.mkdir(path.join(dest, directoryname)))
     .then(() => {
-      const directorypath = path.join(dest, directoryname);
-      fs.mkdir(directorypath);
       const tasks = links.map(({ href, fullFilePath }) => (
         {
           title: `download ${href}`,
@@ -64,7 +60,6 @@ export default (dest, url) => {
             .then(({ data }) => fs.writeFile(fullFilePath, data)),
         }
       ));
-      const listr = new Listr(tasks, { concurrent: true, exitOnError: false });
-      return listr.run();
+      return new Listr(tasks, { concurrent: true, exitOnError: false }).run();
     });
 };
