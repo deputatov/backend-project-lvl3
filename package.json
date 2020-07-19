@@ -4,7 +4,7 @@
   "description": "Project [backend-project-lvl3](https://ru.hexlet.io/professions/backend/projects/4)",
   "main": "index.js",
   "bin": {
-    "page-loader": "bin/nodejs-package.js"
+    "page-loader": "bin/page-loader.js"
   },
   "engines": {
     "node": ">=14"
