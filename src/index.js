@@ -9,57 +9,57 @@ import 'axios-debug-log';
 
 const log = debug('page-loader');
 
-const tags = {
-  link: 'href',
-  script: 'src',
-  img: 'src',
+const tags = { link: 'href', script: 'src', img: 'src' };
+
+const isLocalResource = (src, url) => new URL(src, url).origin === url.origin;
+
+const getName = (string, pattern = /\W/g, replacement = '-') => _.trim(_.replace(string, pattern, replacement), replacement);
+
+const getParsedHTMLAndLinks = (data, dest, srcDirname, links, myURL) => {
+  log('parsing html, setting attributes to local resources');
+  const $ = cheerio.load(data);
+  const resourcePath = path.join(dest, srcDirname);
+  Object.entries(tags).map(([tag, attribute]) => $(tag).each((i, element) => {
+    const $element = $(element);
+    const resource = $element.attr(attribute);
+    if (resource && isLocalResource(resource, myURL)) {
+      const { dir, name, ext } = path.parse(resource);
+      const filename = `${getName(path.join(dir, name))}${ext}`;
+      const localpath = path.join(srcDirname, filename);
+      $element.attr(attribute, localpath);
+      const { href: url } = new URL(resource, myURL);
+      links.push({ url, filepath: path.join(resourcePath, filename) });
+    }
+  }));
+  return $.html();
 };
 
-const isLocalResource = (src, url) => {
-  const myURL = new URL(src, url);
-  return myURL.origin === url.origin;
+const downloadFiles = (downloadLinks) => {
+  log('downloading files');
+  const tasks = downloadLinks.map(({ url, filepath }) => (
+    {
+      title: `download ${url}`,
+      task: () => axios
+        .get(url, { responseType: 'arraybuffer' })
+        .then(({ data }) => fs.writeFile(filepath, data)),
+    }
+  ));
+  return new Listr(tasks, { concurrent: true, exitOnError: false }).run();
 };
-
-const getReplacedString = (string, pattern = /\W/g, replacement = '-') => _.trim(_.replace(string, pattern, replacement), replacement);
 
 export default (dest, url) => {
   const myURL = new URL(url);
   const { host, pathname } = myURL;
-  const replacedURL = getReplacedString(`${host}${pathname}`);
-  const filename = `${replacedURL}.html`;
-  const directoryname = `${replacedURL}_files`;
+  const name = getName(`${host}${pathname}`);
+  const srcDirname = `${name}_files`;
+  const htmlFilepath = path.join(dest, `${name}.html`);
   const links = [];
   return axios
     .get(url)
-    .then(({ data }) => {
-      const $ = cheerio.load(data);
-      const directorypath = path.join(dest, directoryname);
-      Object.entries(tags).map(([tag, attribute]) => $(tag).each((i, element) => {
-        const $element = $(element);
-        const resource = $element.attr(attribute);
-        if (resource && isLocalResource(resource, myURL)) {
-          const { dir, name, ext } = path.parse(resource);
-          const newName = `${getReplacedString(path.join(dir, name))}${ext}`;
-          const filepath = path.join(directoryname, newName);
-          $element.attr(attribute, filepath);
-          const { href } = new URL(resource, myURL);
-          links.push({ href, fullFilePath: path.join(directorypath, newName) });
-        }
-      }));
-      const destFolderHTML = path.join(dest, filename);
-      fs.writeFile(destFolderHTML, $.html());
-      log('write html file %o', destFolderHTML);
-    })
-    .then(() => fs.mkdir(path.join(dest, directoryname)))
-    .then(() => {
-      const tasks = links.map(({ href, fullFilePath }) => (
-        {
-          title: `download ${href}`,
-          task: () => axios
-            .get(href, { responseType: 'arraybuffer' })
-            .then(({ data }) => fs.writeFile(fullFilePath, data)),
-        }
-      ));
-      return new Listr(tasks, { concurrent: true, exitOnError: false }).run();
-    });
+    .then(({ data }) => getParsedHTMLAndLinks(data, dest, srcDirname, links, myURL))
+    .then((html) => fs.writeFile(htmlFilepath, html))
+    .then(() => log('writes data to the html file'))
+    .then(() => fs.mkdir(path.join(dest, srcDirname)))
+    .then(() => log('created directory for downloading files'))
+    .then(() => downloadFiles(links));
 };
