@@ -15,8 +15,9 @@ const isLocalResource = (src, url) => new URL(src, url).origin === url.origin;
 
 const getName = (string, pattern = /\W/g, replacement = '-') => _.trim(_.replace(string, pattern, replacement), replacement);
 
-const getParsedHTMLAndLinks = (data, dest, srcDirname, links, myURL) => {
-  log('parsing html, setting attributes to local resources');
+const getParsedHTMLAndLinks = (data, dest, srcDirname, myURL) => {
+  log('parse html, setting attributes to local resources');
+  const links = [];
   const $ = cheerio.load(data);
   const resourcePath = path.join(dest, srcDirname);
   Object.entries(tags).map(([tag, attribute]) => $(tag).each((i, element) => {
@@ -31,12 +32,12 @@ const getParsedHTMLAndLinks = (data, dest, srcDirname, links, myURL) => {
       links.push({ url, filepath: path.join(resourcePath, filename) });
     }
   }));
-  return $.html();
+  return { html: $.html(), links };
 };
 
-const downloadFiles = (downloadLinks) => {
-  log('downloading files');
-  const tasks = downloadLinks.map(({ url, filepath }) => (
+const downloadFiles = (links) => {
+  log('download files');
+  const tasks = links.map(({ url, filepath }) => (
     {
       title: `download ${url}`,
       task: () => axios
@@ -53,13 +54,16 @@ export default (dest, url) => {
   const name = getName(`${host}${pathname}`);
   const srcDirname = `${name}_files`;
   const htmlFilepath = path.join(dest, `${name}.html`);
-  const links = [];
   return axios
     .get(url)
-    .then(({ data }) => getParsedHTMLAndLinks(data, dest, srcDirname, links, myURL))
-    .then((html) => fs.writeFile(htmlFilepath, html))
-    .then(() => log('writes data to the html file'))
-    .then(() => fs.mkdir(path.join(dest, srcDirname)))
-    .then(() => log('created directory for downloading files'))
-    .then(() => downloadFiles(links));
+    .then(({ data }) => getParsedHTMLAndLinks(data, dest, srcDirname, myURL))
+    .then(({ html, links }) => {
+      log('writes data to the html file');
+      return fs.writeFile(htmlFilepath, html).then(() => links);
+    })
+    .then((links) => {
+      log('created directory for downloading files');
+      return fs.mkdir(path.join(dest, srcDirname)).then(() => links);
+    })
+    .then((links) => downloadFiles(links));
 };
