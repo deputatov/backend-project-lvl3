@@ -25,5 +25,4 @@ export default () => {
         });
     })
     .parse(process.argv);
-  if (!commander.args.length) commander.help();
 };
