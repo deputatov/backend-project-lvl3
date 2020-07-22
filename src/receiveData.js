@@ -15,7 +15,7 @@ const getData = (html, dest, srcDirname, myURL) => {
   const links = Object
     .entries(tags)
     .reduce((acc, [tag, attribute]) => {
-      const arr = $(tag).map((i, element) => {
+      const srcLinks = $(tag).map((i, element) => {
         const $element = $(element);
         const resource = $element.attr(attribute);
         if (resource && isLocalResource(resource, myURL)) {
@@ -28,7 +28,7 @@ const getData = (html, dest, srcDirname, myURL) => {
         }
         return null;
       }).get();
-      return [...acc, ...arr];
+      return [...acc, ...srcLinks];
     }, []);
   log('Parse html, setting attributes to local resources');
   return { html: $.html(), links };
