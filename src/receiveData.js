@@ -1,7 +1,11 @@
 import path from 'path';
 import cheerio from 'cheerio';
-import log from './debug.js';
-import { genName, isLocalResource } from './utils.js';
+import log from './logger.js';
+import {
+  genFilename,
+  genSrcDirname,
+  isLocalResource,
+} from './utils.js';
 
 const tags = {
   link: 'href',
@@ -9,7 +13,9 @@ const tags = {
   img: 'src',
 };
 
-const getData = (html, dest, srcDirname, myURL) => {
+export default (html, dest, link) => {
+  const url = new URL(link);
+  const srcDirname = genSrcDirname(url);
   const $ = cheerio.load(html);
   const resourcePath = path.join(dest, srcDirname);
   const links = Object
@@ -18,13 +24,12 @@ const getData = (html, dest, srcDirname, myURL) => {
       const srcLinks = $(tag).map((i, element) => {
         const $element = $(element);
         const resource = $element.attr(attribute);
-        if (resource && isLocalResource(resource, myURL)) {
-          const { dir, name, ext } = path.parse(resource);
-          const filename = `${genName(path.join(dir, name))}${ext}`;
+        if (resource && isLocalResource(resource, url)) {
+          const filename = genFilename(resource);
           const localpath = path.join(srcDirname, filename);
           $element.attr(attribute, localpath);
-          const { href: url } = new URL(resource, myURL);
-          return { url, filepath: path.join(resourcePath, filename) };
+          const { href } = new URL(resource, url);
+          return { href, filepath: path.join(resourcePath, filename) };
         }
         return null;
       }).get();
@@ -33,5 +38,3 @@ const getData = (html, dest, srcDirname, myURL) => {
   log('Parse html, setting attributes to local resources');
   return { html: $.html(), links };
 };
-
-export default getData;
