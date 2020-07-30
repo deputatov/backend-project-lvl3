@@ -1,8 +1,4 @@
-import fs from 'fs/promises';
-import path from 'path';
 import axios from 'axios';
-import log from './logger.js';
-import { genName } from './utils.js';
 import receiveData from './receiveData.js';
 import downloadData from './downloadData.js';
 
