@@ -2,11 +2,11 @@ import fs from 'fs/promises';
 import path from 'path';
 import axios from 'axios';
 import Listr from 'listr';
-import log from './logger.js';
+import log from './lib/logger.js';
 import {
   genSrcDirname,
   genHtmlname,
-} from './utils.js';
+} from './lib/utils.js';
 
 const downloadLinks = (links) => {
   const tasks = links.map(({ href, filepath }) => (

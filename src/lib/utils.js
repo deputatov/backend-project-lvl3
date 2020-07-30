@@ -1,8 +1,6 @@
 import _ from 'lodash';
 import path from 'path';
 
-const isLocalResource = (src, url) => new URL(src, url).origin === url.origin;
-
 const genAddress = (url) => {
   const { host, pathname } = url;
   const address = `${host}${pathname}`;
@@ -11,11 +9,6 @@ const genAddress = (url) => {
 
 const genName = (address, pattern = /\W/g, replacement = '-') => _
   .trim(_.replace(address, pattern, replacement), replacement);
-
-const genSrcDirname = (url) => {
-  const address = genAddress(url);
-  return `${genName(address)}_files`;
-};
 
 const genFilename = (filepath) => {
   const { dir, name, ext } = path.parse(filepath);
@@ -28,9 +21,16 @@ const genHtmlname = (url) => {
   return `${genName(address)}.html`;
 };
 
+const genSrcDirname = (url) => {
+  const address = genAddress(url);
+  return `${genName(address)}_files`;
+};
+
+const isLocalResource = (src, url) => new URL(src, url).origin === url.origin;
+
 export {
-  isLocalResource,
   genFilename,
-  genSrcDirname,
   genHtmlname,
+  genSrcDirname,
+  isLocalResource,
 };

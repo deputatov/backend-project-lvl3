@@ -1,11 +1,11 @@
 import path from 'path';
 import cheerio from 'cheerio';
-import log from './logger.js';
+import log from './lib/logger.js';
 import {
   genFilename,
   genSrcDirname,
   isLocalResource,
-} from './utils.js';
+} from './lib/utils.js';
 
 const tags = {
   link: 'href',
