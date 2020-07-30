@@ -8,7 +8,7 @@ import {
   genHtmlname,
 } from './lib/utils.js';
 
-const downloadLinks = (links) => {
+const downloadFiles = (links) => {
   const tasks = links.map(({ href, filepath }) => (
     {
       title: `download ${href}`,
@@ -28,5 +28,5 @@ export default (html, links, dest, link) => {
     .then(() => log('Saving the html file locally'))
     .then(() => fs.mkdir(path.join(dest, srcDirname)))
     .then(() => log('Created directory for downloading files'))
-    .then(() => downloadLinks(links));
+    .then(() => downloadFiles(links));
 };
