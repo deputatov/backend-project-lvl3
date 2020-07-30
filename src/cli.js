@@ -17,8 +17,9 @@ export default () => {
     .option('-o, --output <dest>', 'destination path', process.cwd())
     .arguments('<url>')
     .action((url) => {
-      loadPage(commander.output, url)
-        .then(() => console.log('done!'))
+      const dest = commander.output;
+      loadPage(dest, url)
+        .then(() => console.log(`\npage ${url} has been downloaded to ${dest}`))
         .catch((error) => {
           console.error(error.message);
           process.exit(1);
